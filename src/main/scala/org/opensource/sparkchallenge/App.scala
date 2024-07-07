@@ -34,6 +34,8 @@ object App {
 
     val df_3 = part3(googlePlayStoreDf)
 
+    val df_4 = part4(df_1, df_3)
+
     spark.stop()
   }
 
@@ -102,6 +104,19 @@ object App {
         max_by(col("Current Ver"), col("Reviews")).as("Current_Version"),
         max_by(col("Android Ver"), col("Reviews")).as("Minimum_Android_Version"),
       )
+
+    df
+  }
+
+  def part4(inputDf1: DataFrame, inputDf2: DataFrame): DataFrame = {
+
+    val df = inputDf2
+      .join(inputDf1, Seq("App"))
+
+    df.write
+      .mode("overwrite")
+      .option("compression", "gzip")
+      .parquet("output/googleplaystore_cleaned")
 
     df
   }
