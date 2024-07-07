@@ -1,15 +1,9 @@
 import org.opensource.sparkchallenge.App
-import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 
-class Part2Suite extends AnyFunSuite {
+class Part2Suite extends AnyFunSuite with SharedSparkSessionHelper {
 
-  val spark: SparkSession = SparkSession.builder
-    .master("local[*]")
-    .appName("Part2Suite")
-    .getOrCreate()
-
-  import spark.implicits._
+  import sqlImplicits._
 
   test ("df_2 should have every app with rating => 4.0 by descending order") {
 
@@ -21,15 +15,13 @@ class Part2Suite extends AnyFunSuite {
       .toDF("App", "Rating")
 
     val expected = Seq(
-      ("Bar2", "5.0"),
-      ("Foo", "4.2"),
-      ("Bar", "4.0"))
+      ("Bar2", 5.0),
+      ("Foo", 4.2),
+      ("Bar", 4.0))
       .toDF("App", "Rating")
 
     val df_2 = App.part2(inputDf)
 
     assertResult(expected.collect())(df_2.collect())
-
-    spark.stop()
   }
 }

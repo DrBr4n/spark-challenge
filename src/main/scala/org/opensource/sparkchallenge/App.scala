@@ -1,6 +1,6 @@
 package org.opensource.sparkchallenge
 
-import org.apache.spark.sql.functions.{array_distinct, col, collect_list, desc, max, max_by, regexp_extract, to_timestamp, when}
+import org.apache.spark.sql.functions.{array_distinct, avg, col, collect_list, count, desc, max, max_by, regexp_extract, to_timestamp, when}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -36,6 +36,8 @@ object App {
 
     val df_4 = part4(df_1, df_3)
 
+    val df_5 = part5(df_1, df_3)
+
     spark.stop()
   }
 
@@ -64,6 +66,7 @@ object App {
     df.coalesce(1)
       .write
       .mode("overwrite")
+      .option("header", "true")
       .option("delimiter", "§")
       .option("quote", "\"")
       .option("escape", "\"")
@@ -117,6 +120,26 @@ object App {
       .mode("overwrite")
       .option("compression", "gzip")
       .parquet("output/googleplaystore_cleaned")
+
+    df
+  }
+
+  def part5(inputDf1: DataFrame, inputDf2: DataFrame) : DataFrame = {
+
+    val df = inputDf1
+      .join(inputDf2, Seq("App"))
+      .withColumnRenamed("Genres", "Genre")
+      .groupBy("Genre")
+      .agg(
+        count(col("Genre")).as("Count"),
+        avg(col("Rating")).as("Average_Rating"),
+        avg(col("Average_Sentiment_Polarity")).as("Average_Sentiment_Polarity")
+      )
+
+    df.write
+      .mode("overwrite")
+      .option("compression", "gzip")
+      .parquet("output/googleplaystore_metrics")
 
     df
   }

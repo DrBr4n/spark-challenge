@@ -1,15 +1,9 @@
 import org.opensource.sparkchallenge.App
-import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 
-class Part1Suite extends AnyFunSuite {
+class Part1Suite extends AnyFunSuite with SharedSparkSessionHelper {
 
-  val spark: SparkSession = SparkSession.builder
-    .master("local[*]")
-    .appName("Part1Suite")
-    .getOrCreate()
-
-  import spark.implicits._
+  import sqlImplicits._
 
   test ("An nan value should be replaced by 0.0") {
 
@@ -22,14 +16,12 @@ class Part1Suite extends AnyFunSuite {
       .toDF("App", "Sentiment_Polarity")
 
     val expected = Seq(
-      ("Foo", "0.5"),
-      ("Bar", "0.0"))
+      ("Foo", 0.5),
+      ("Bar", 0.0))
       .toDF("App", "Average_Sentiment_Polarity")
 
     val df_1 = App.part1(inputDf)
 
     assertResult(expected.collect())(df_1.collect())
-
-    spark.stop()
   }
 }
